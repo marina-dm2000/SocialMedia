@@ -1,0 +1,35 @@
+package com.example.socialMedia.service;
+
+import com.example.socialMedia.model.Activity;
+import com.example.socialMedia.repository.ActivityRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+public class ActivityService {
+    private final ActivityRepository activityRepository;
+
+    public ActivityService(ActivityRepository activityRepository) {
+        this.activityRepository = activityRepository;
+    }
+
+    public Activity save(Activity activity) {
+        return activityRepository.save(activity);
+    }
+
+    public void delete(Activity activity) {
+        activityRepository.delete(activity);
+    }
+
+    public List<Activity> findAll() {
+        return activityRepository.findAll();
+    }
+
+    public Optional<Activity> findById(Long id) {
+        return activityRepository.findById(id);
+    }
+}

@@ -1,0 +1,87 @@
+package com.example.socialMedia.service;
+
+import com.example.socialMedia.dto.post.PostRequestDTO;
+import com.example.socialMedia.dto.post.PostUpdateRequest;
+import com.example.socialMedia.model.Post;
+import com.example.socialMedia.model.User;
+import com.example.socialMedia.repository.PostRepository;
+import org.springdoc.api.OpenApiResourceNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@Transactional
+public class PostService {
+    private final PostRepository postRepository;
+
+    public PostService(PostRepository postRepository) {
+        this.postRepository = postRepository;
+    }
+
+    public Post save(Post post) {
+        return postRepository.save(post);
+    }
+
+    public void delete(Post post) {
+        postRepository.delete(post);
+    }
+
+    public List<Post> findAll() {
+        return postRepository.findAll();
+    }
+
+    public Post createPost(PostRequestDTO postRequestDTO, Long userId) {
+        Post post = new Post();
+        post.setTitle(postRequestDTO.getTitle());
+        post.setText(postRequestDTO.getText());
+        post.setSendDate(LocalDateTime.now());
+        User user = new User();
+        user.setId(userId);
+        post.setSender(user);
+        return postRepository.save(post);
+    }
+
+    public Post getPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new OpenApiResourceNotFoundException("Post not found with ID: " + postId));
+    }
+
+    public Post updatePost(Long postId, PostUpdateRequest postUpdateRequest) {
+        Post post = getPostById(postId);
+        post.setTitle(postUpdateRequest.getTitle());
+        post.setText(postUpdateRequest.getText());
+        return postRepository.save(post);
+    }
+
+    public void deletePost(Long postId) {
+        Post post = getPostById(postId);
+        postRepository.delete(post);
+    }
+
+    public Post likePost(Long postId, User user) {
+        Post post = getPostById(postId);
+
+        // Check if the user has already liked the post
+        if (post.getLikes().contains(user)) {
+            throw new IllegalArgumentException("User has already liked the post");
+        }
+
+        post.getLikes().add(user);
+        return postRepository.save(post);
+    }
+
+    public Post unlikePost(Long postId, User user) {
+        Post post = getPostById(postId);
+
+        // Remove user from the list of users who liked the post
+        post.getLikes().remove(user);
+        post.setReactions(post.getReactions() - 1);
+
+        return postRepository.save(post);
+    }
+
+
+}
